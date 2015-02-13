@@ -62,6 +62,7 @@ public class GameControl extends BukkitRunnable {
 	public int start() {
 		// is the game not already going on
 		if (!running) {
+			running = true;
 
 			// 180 seconds, or 3 minutes, or the length of disc 13
 			counter = 180;
@@ -77,7 +78,6 @@ public class GameControl extends BukkitRunnable {
 			// get a random index for players on the server
 			int random = (int) Math.round(Math.random() * (Bukkit.getOnlinePlayers().size() - 1));
 			int i = 0;
-			int id = 1;
 			for (Player player : Bukkit.getOnlinePlayers()) {
 
 				player.setGameMode(GameMode.ADVENTURE);
@@ -111,10 +111,7 @@ public class GameControl extends BukkitRunnable {
 					inv.setBoots(Methods.createColorArmor(new ItemStack(Material.LEATHER_BOOTS), Color.RED));
 					break;
 				} else {
-					// if they are not the hunter add them to the scoreboard
-					plugin.objective.getScore(player.getName()).setScore(id);
 					alive.add(player.getUniqueId());
-					id++;
 				}
 				i++;
 			}
@@ -122,6 +119,7 @@ public class GameControl extends BukkitRunnable {
 			// more scoreboard stuff
 			plugin.objective.setDisplayName(ChatColor.RED + "Hunter: " + ChatColor.DARK_RED + ChatColor.BOLD + hunter.getName());
 			plugin.objective.getScore("Alive players").setScore(0);
+			int id = 1;
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				PlayerInventory inv = player.getInventory();
 				
@@ -141,14 +139,17 @@ public class GameControl extends BukkitRunnable {
 					// effects
 					player.removePotionEffect(PotionEffectType.BLINDNESS);
 					player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, true, false));
+					player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 0, true, false));
 					player.setWalkSpeed((float) 0.11);
 
 					// clear inventory
 					inv.clear();
 					inv.setArmorContents(null);
+					// if they are not the hunter add them to the scoreboard
+					plugin.objective.getScore(player.getName()).setScore(id);
+					id++;
 				}
-				// play music
-				plugin.getCurrentMap().playMusic();
+				player.setHealth(20);
 
 				// action bar tell them who the hunter is, this also overrides
 				// the text that shows the song currently playing
@@ -159,7 +160,7 @@ public class GameControl extends BukkitRunnable {
 
 				// more info about hunter
 				String msg = "Find out more about: ";
-				String click = ChatColor.AQUA + hunter.getName();
+				String click = ChatColor.AQUA + "" + ChatColor.UNDERLINE + hunter.getName();
 				String command = "/stats " + hunter.getName();
 				String code = "{\"text\":\"" + msg + "\",\"extra\":[{\"text\":\"" + click + "\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"" + command + "\"}}]}";
 				Object comp = classChatSerializer.getMethod("a", String.class).of(classChatSerializer).call(code);
@@ -169,6 +170,8 @@ public class GameControl extends BukkitRunnable {
 				// show scoreboard to all players
 				player.setScoreboard(plugin.scoreboard);
 			}
+			// play music
+			plugin.getCurrentMap().playMusic();
 			return 0;
 		} else
 			return 1;
@@ -177,6 +180,7 @@ public class GameControl extends BukkitRunnable {
 	public int stop(String msg) {
 
 		if (running) {
+			running = false;
 			// get lobby location
 			String string = (String) plugin.config().getString("lobby");
 			World world = Bukkit.getWorld(string.split(",")[0]);
@@ -223,12 +227,10 @@ public class GameControl extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		running = true;
 		if (counter <= 0) {
 			if (running) {
 				this.stop(ChatColor.DARK_RED + "Players Win!");
 				this.cancel();
-				running = false;
 			}
 		}
 

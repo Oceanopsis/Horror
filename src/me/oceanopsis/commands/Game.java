@@ -39,9 +39,6 @@ public class Game implements CommandExecutor {
 							sender.sendMessage(ChatColor.RED + "Game not currently running!");
 						return true;
 					}
-				} else {
-					sendHelp(sender);
-					return false;
 				}
 				if (sender instanceof Player) {
 					Player player = (Player) sender;
@@ -51,16 +48,15 @@ public class Game implements CommandExecutor {
 							map.addSpawn(player.getLocation());
 							map.save();
 							sender.sendMessage(ChatColor.YELLOW + "New spawn point created!");
+							return false;
 						}
 						if (args[0].equalsIgnoreCase("deleteallspawns")) {
 							Map map = plugin.getMap(args[1].toLowerCase());
 							map.clearSpawns();
 							map.save();
 							sender.sendMessage(ChatColor.YELLOW + "All spawn points deleted!");
+							return false;
 						}
-					} else {
-						sendHelp(sender);
-						return false;
 					}
 					if (args.length == 1) {
 						if (args[0].equalsIgnoreCase("setlobbyspawn")) {
@@ -69,16 +65,15 @@ public class Game implements CommandExecutor {
 							plugin.config().set("lobby", location);
 							plugin.config().save();
 							sender.sendMessage(ChatColor.YELLOW + "Lobby spawn point set!");
+							return false;
 						}
-					} else {
-						sendHelp(sender);
-						return false;
 					}
 				}
 			} else {
 				sender.sendMessage(ChatColor.RED + "Nope!");
 			}
 		}
+		sendHelp(sender);
 		return false;
 	}
 

@@ -30,8 +30,9 @@ public class Stats implements CommandExecutor {
 					((Player) sender).playSound(((Player) sender).getLocation(), Sound.AMBIENCE_THUNDER, 2, (float) 0.5);
 					((Player) sender).playSound(((Player) sender).getLocation(), Sound.AMBIENCE_CAVE, 2, (float) 2);
 					Yaml yaml = plugin.getPlayerYaml((Player)sender);
-					sender.sendMessage(ChatColor.GREEN + "Kills: " + yaml.getInteger("kills"));
-					sender.sendMessage(ChatColor.GREEN + "Deaths: " + yaml.getInteger("deaths"));
+					sender.sendMessage(ChatColor.DARK_RED + "Your stats");
+					sender.sendMessage(ChatColor.YELLOW + "Kills: " + yaml.getInteger("kills"));
+					sender.sendMessage(ChatColor.YELLOW + "Deaths: " + yaml.getInteger("deaths"));
 					sender.sendMessage(ChatColor.GREEN + "Ping: " + Methods.pingPlayer((Player) sender));
 				} else {
 					sender.sendMessage("Console can't have stats!");
@@ -45,8 +46,9 @@ public class Stats implements CommandExecutor {
 					return false;
 				}
 					Yaml yaml = plugin.getPlayerYaml(target.getUniqueId());
-					sender.sendMessage(ChatColor.GREEN + "Kills: " + yaml.getInteger("kills"));
-					sender.sendMessage(ChatColor.GREEN + "Deaths: " + yaml.getInteger("deaths"));
+					sender.sendMessage(ChatColor.DARK_RED + "Stats for: " + ChatColor.GOLD + target.getName());
+					sender.sendMessage(ChatColor.YELLOW + "Kills: " + yaml.getInteger("kills"));
+					sender.sendMessage(ChatColor.YELLOW + "Deaths: " + yaml.getInteger("deaths"));
 			}
 		}
 		return false;
