@@ -37,8 +37,6 @@ public class Horror extends JavaPlugin {
 
 	private String currentMap = "";
 
-	private static final String INTERNAL_NMS_VERSION = "v1_8_R1";
-
 	private HashMap<UUID, Yaml> playerYaml = new HashMap<UUID, Yaml>();
 
 	private HashMap<String, Yaml> maps = new HashMap<String, Yaml>();
@@ -62,7 +60,6 @@ public class Horror extends JavaPlugin {
 		this.getLogger().info("Loading files into memory...");
 
 		// load configs
-		//FILES GET DELETED UPON LOADING, FIX THIS
 		loadConfigs();
 
 		//set scoreboard variables
@@ -109,14 +106,6 @@ public class Horror extends JavaPlugin {
 		this.getLogger().info("Starting scheduler");
 		new Timer(plugin).runTaskTimer(this, 20L, 20L);
 		this.getLogger().info("Scheduler started");
-
-		if (!INTERNAL_NMS_VERSION.equals(getNmsVersion())) {
-			this.getLogger().severe("Version missmatch!");
-			this.getLogger().severe("Server version: '" + getNmsVersion() + "'");
-			this.getLogger().severe("Expected server version: '" + INTERNAL_NMS_VERSION + "'");
-		} else {
-			this.getLogger().info("Version match! continue on with your day.");
-		}
 	}
 
 	@Override
@@ -190,18 +179,23 @@ public class Horror extends JavaPlugin {
 
 	public void loadConfigs() {
 		
-		this.config = getConfigIOFile();
+		Yaml config = getConfigIOFile();
+		config.load();
+		this.config = config;
 
 		// enter all players, offline and online, into memory
 		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
 			Yaml yaml = this.getPlayerIOFile(op.getUniqueId());
+			yaml.load();
 			this.playerYaml.put(op.getUniqueId(), yaml);
 		}
 
 		// load maps into memory
 		File mapfile = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "maps");
 		for (String fileName : mapfile.list()) {
-			this.maps.put(fileName.replace(".yml", ""), getMapIOFile(fileName.replace(".yml", "")));
+			Yaml map = getMapIOFile(fileName.replace(".yml", ""));
+			map.load();
+			this.maps.put(fileName.replace(".yml", ""), map);
 			currentMap = fileName.replace(".yml", "");
 		}
 	}
@@ -211,11 +205,6 @@ public class Horror extends JavaPlugin {
 		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
 			Yaml yaml = this.getPlayerYaml(op.getUniqueId());
 			yaml.save();
-		}
-
-		File mapfile = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "maps");
-		for (String fileName : mapfile.list()) {
-			this.getMap(fileName.replace(".yml", "")).getYaml().save();
 		}
 	}
 
