@@ -1,0 +1,10 @@
+name: Horror
+main: me.oceanopsis.Horror
+version: 1.0
+description: Runs everything you need for a horror server
+depend: [ProtocolLib]
+commands:
+        game:
+            description: controls plugin
+        stats:
+            description: gets stats
