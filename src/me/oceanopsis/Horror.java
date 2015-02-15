@@ -9,8 +9,8 @@ import me.oceanopsis.commands.Game;
 import me.oceanopsis.commands.Stats;
 import me.oceanopsis.events.PlayerDeathListener;
 import me.oceanopsis.events.PlayerJoinListener;
+import me.oceanopsis.events.PlayerMoveListener;
 import me.oceanopsis.events.SoundListener;
-import me.oceanopsis.util.ArtRenderer;
 import me.oceanopsis.util.PlayerRecord;
 import me.oceanopsis.util.Yaml;
 
@@ -235,6 +235,7 @@ public class Horror extends JavaPlugin {
 		PluginManager pm = Bukkit.getPluginManager();
 		pm.registerEvents(new PlayerJoinListener(this), this);
 		pm.registerEvents(new PlayerDeathListener(this), this);
+		pm.registerEvents(new PlayerMoveListener(this), this);
 	}
 
 	private void setCommandExecuters() {

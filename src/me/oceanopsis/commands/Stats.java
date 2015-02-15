@@ -7,7 +7,6 @@ import me.oceanopsis.util.Yaml;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -27,8 +26,6 @@ public class Stats implements CommandExecutor {
 		if (label.equalsIgnoreCase("stats")) {
 			if (args.length == 0) {
 				if (sender instanceof Player) {
-					((Player) sender).playSound(((Player) sender).getLocation(), Sound.AMBIENCE_THUNDER, 2, (float) 0.5);
-					((Player) sender).playSound(((Player) sender).getLocation(), Sound.AMBIENCE_CAVE, 2, (float) 2);
 					Yaml yaml = plugin.getPlayerYaml((Player)sender);
 					sender.sendMessage(ChatColor.DARK_RED + "Your stats");
 					sender.sendMessage(ChatColor.YELLOW + "Kills: " + yaml.getInteger("kills"));
