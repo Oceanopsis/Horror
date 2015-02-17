@@ -40,7 +40,7 @@ public class Horror extends JavaPlugin {
 
 	private HashMap<UUID, Yaml> playerYaml = new HashMap<UUID, Yaml>();
 
-	private HashMap<String, Yaml> maps = new HashMap<String, Yaml>();
+	private HashMap<String, Map> maps = new HashMap<String, Map>();
 
 	private Yaml config;
 
@@ -118,27 +118,18 @@ public class Horror extends JavaPlugin {
 		unloadConfigs();
 	}
 
-	public String getNmsVersion() {
-		String NMS = null;
-		try {
-			NMS = Bukkit.getServer().getClass().getPackage().getName().split(".")[3];
-		} catch (ArrayIndexOutOfBoundsException ex) {
-			NMS = "pre";
-		}
-		return NMS;
-	}
-
 	public GameControl getGame() {
 		return game;
 	}
 
 	public Map getMap(String string) {
 		if (this.maps.containsKey(string)) {
-			return new Map(maps.get(string));
+			return maps.get(string);
 		} else {
 			Yaml yaml = this.getMapIOFile(string);
-			this.maps.put(string, yaml);
-			return new Map(yaml);
+			Map map = new Map(yaml);
+			this.maps.put(string, map);
+			return map;
 		}
 	}
 
@@ -151,7 +142,7 @@ public class Horror extends JavaPlugin {
 	}
 
 	public Map getCurrentMap() {
-		return new Map(maps.get(currentMap));
+		return maps.get(currentMap);
 	}
 
 	private Yaml getMapIOFile(String string) {
@@ -200,7 +191,7 @@ public class Horror extends JavaPlugin {
 		for (String fileName : mapfile.list()) {
 			Yaml map = getMapIOFile(fileName.replace(".yml", ""));
 			map.load();
-			this.maps.put(fileName.replace(".yml", ""), map);
+			this.maps.put(fileName.replace(".yml", ""), new Map(map));
 			currentMap = fileName.replace(".yml", "");
 		}
 	}
