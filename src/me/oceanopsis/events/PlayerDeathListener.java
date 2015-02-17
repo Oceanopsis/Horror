@@ -36,6 +36,22 @@ public class PlayerDeathListener implements Listener {
 				plugin.getGame().stop(ChatColor.DARK_RED + "The Hunter Wins!");
 			plugin.scoreboard.resetScores(killed.getName());
 		}
+		try {
+			Object nmsPlayer = killed.getClass().getMethod("getHandle").invoke(killed);
+			Object packet = Class.forName(nmsPlayer.getClass().getPackage().getName() + ".PacketPlayInClientCommand").newInstance();
+			Class<?> enumClass = Class.forName(nmsPlayer.getClass().getPackage().getName() + ".EnumClientCommand");
+
+			for (Object ob : enumClass.getEnumConstants()) {
+				if (ob.toString().equals("PERFORM_RESPAWN")) {
+					packet = packet.getClass().getConstructor(enumClass).newInstance(ob);
+				}
+			}
+
+			Object con = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
+			con.getClass().getMethod("a", packet.getClass()).invoke(con, packet);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 }

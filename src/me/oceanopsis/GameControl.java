@@ -16,7 +16,6 @@ import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,8 +31,10 @@ public class GameControl extends BukkitRunnable {
 
 	// hunter
 	public static Player hunter;
-	
+
 	public static ArrayList<UUID> alive = new ArrayList<UUID>();
+
+	boolean cancel = false;
 
 	// reflection
 	RefClass classPacket = ReflectionUtils.getRefClass("{nms}.Packet");
@@ -97,12 +98,12 @@ public class GameControl extends BukkitRunnable {
 					player.teleport(spawn);
 
 					// they are slow
-					player.setWalkSpeed((float) 0.12);
+					player.setWalkSpeed((float) 0.14);
 
 					// set their inventory contents
 					inv.clear();
 					ItemStack item = Methods.createItem(new ItemStack(Material.DIAMOND_AXE), ChatColor.DARK_RED + "Hunters Axe", null);
-					item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 10);
+					item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 3);
 					item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 					inv.addItem(item);
 					inv.setHelmet(Methods.createColorArmor(new ItemStack(Material.LEATHER_HELMET), Color.RED));
@@ -122,7 +123,7 @@ public class GameControl extends BukkitRunnable {
 			int id = 1;
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				PlayerInventory inv = player.getInventory();
-				
+
 				if (!plugin.playing.hasPlayer(player))
 					plugin.playing.addPlayer(player);
 
@@ -140,7 +141,7 @@ public class GameControl extends BukkitRunnable {
 					player.removePotionEffect(PotionEffectType.BLINDNESS);
 					player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, Integer.MAX_VALUE, 0, true, false));
 					player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, Integer.MAX_VALUE, 0, true, false));
-					player.setWalkSpeed((float) 0.11);
+					player.setWalkSpeed((float) 0.15);
 
 					// clear inventory
 					inv.clear();
@@ -181,15 +182,7 @@ public class GameControl extends BukkitRunnable {
 
 		if (running) {
 			running = false;
-			// get lobby location
-			String string = (String) plugin.config().getString("lobby");
-			World world = Bukkit.getWorld(string.split(",")[0]);
-			double x = Double.parseDouble(string.split(",")[1]);
-			double y = Double.parseDouble(string.split(",")[2]);
-			double z = Double.parseDouble(string.split(",")[3]);
-			double yaw = Double.parseDouble(string.split(",")[4]);
-			double pitch = Double.parseDouble(string.split(",")[5]);
-			Location loc = new Location(world, x, y, z, (int) yaw, (int) pitch);
+			cancel = true;
 
 			for (Player player : Bukkit.getOnlinePlayers()) {
 				if (plugin.playing.hasPlayer(player))
@@ -211,7 +204,23 @@ public class GameControl extends BukkitRunnable {
 
 				// teleport them to lobby and remove the walk speed to normal
 				player.setWalkSpeed((float) 0.2);
-				player.teleport(loc);
+				player.setHealth(0);
+				try {
+					Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
+					Object packet = Class.forName(nmsPlayer.getClass().getPackage().getName() + ".PacketPlayInClientCommand").newInstance();
+					Class<?> enumClass = Class.forName(nmsPlayer.getClass().getPackage().getName() + ".EnumClientCommand");
+
+					for (Object ob : enumClass.getEnumConstants()) {
+						if (ob.toString().equals("PERFORM_RESPAWN")) {
+							packet = packet.getClass().getConstructor(enumClass).newInstance(ob);
+						}
+					}
+
+					Object con = nmsPlayer.getClass().getField("playerConnection").get(nmsPlayer);
+					con.getClass().getMethod("a", packet.getClass()).invoke(con, packet);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
 			}
 
 			// reset scoreboard
@@ -227,17 +236,19 @@ public class GameControl extends BukkitRunnable {
 
 	@Override
 	public void run() {
-		if (counter <= 0) {
-			if (running) {
+		if (!cancel) {
+			if (counter <= 0) {
 				this.stop(ChatColor.DARK_RED + "Players Win!");
-				this.cancel();
 			}
-		}
 
-		// change the time left on the scoreboard
-		plugin.objective.getScore("Time left").setScore(counter);
-		// decrement
-		counter--;
+			// change the time left on the scoreboard
+			plugin.objective.getScore("Time left").setScore(counter);
+			// decrement
+			counter--;
+		} else {
+			cancel = false;
+			this.cancel();
+		}
 	}
 
 }

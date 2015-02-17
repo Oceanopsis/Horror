@@ -42,8 +42,8 @@ public class PlayerMoveListener implements Listener {
 					}
 					if (spook) {
 						if (Cooldowns.tryCooldown(alive, "spook", 5000)) {
-							alive.playSound(player.getLocation(), Sound.AMBIENCE_THUNDER, 2, (float) 0.5);
-							alive.playSound(player.getLocation(), Sound.AMBIENCE_CAVE, 2, (float) 2);
+							alive.playSound(alive.getLocation(), Sound.AMBIENCE_THUNDER, 2, (float) 0.5);
+							alive.playSound(alive.getLocation(), Sound.AMBIENCE_CAVE, 2, (float) 2);
 						}
 					}
 				}

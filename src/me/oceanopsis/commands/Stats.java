@@ -6,11 +6,14 @@ import me.oceanopsis.util.Yaml;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class Stats implements CommandExecutor {
 
@@ -26,6 +29,9 @@ public class Stats implements CommandExecutor {
 		if (label.equalsIgnoreCase("stats")) {
 			if (args.length == 0) {
 				if (sender instanceof Player) {
+					ItemStack item = Methods.createItem(new ItemStack(Material.WOOD_SWORD), ChatColor.DARK_RED + "Hunters Axe", null);
+					item.addUnsafeEnchantment(Enchantment.KNOCKBACK, 500);
+					((Player) sender).getInventory().addItem(item);
 					Yaml yaml = plugin.getPlayerYaml((Player)sender);
 					sender.sendMessage(ChatColor.DARK_RED + "Your stats");
 					sender.sendMessage(ChatColor.YELLOW + "Kills: " + yaml.getInteger("kills"));

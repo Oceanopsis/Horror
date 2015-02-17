@@ -64,8 +64,8 @@ public class Map {
 		refreshSpawns();
 		int r = (int) (Math.random() * spawns.size());
 		Location spawn = spawns.get(r);
-		for (int i = 0; i < spawns.size(); i++) {
-			Player closest = Distance.getClosestPlayer(spawn, 10);
+		for (int i = 0; i < spawns.size() * 2; i++) {
+			Player closest = Distance.getClosestPlayer(spawn, 20);
 			if (closest != null) {
 				if (closest.getUniqueId() != player.getUniqueId()) {
 					r = (int) (Math.random() * spawns.size());

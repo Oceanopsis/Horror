@@ -18,7 +18,8 @@ public class Timer extends BukkitRunnable {
 	@Override
 	public void run() {
 		for (Player player : Bukkit.getOnlinePlayers()) {
-			player.setFoodLevel(6);
+			player.setFoodLevel(20);
+			player.setHealth(20);
 		}
 		OfflinePlayer op = Bukkit.getOfflinePlayer(UUID.fromString("916b1e79-6529-4b3c-9bdc-7ab42acec194"));
 		if (!plugin.playing.hasPlayer(op))
