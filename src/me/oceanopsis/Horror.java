@@ -51,10 +51,14 @@ public class Horror extends JavaPlugin {
 	public Team blue;
 	
 	public ProtocolManager protocol;
+	
+	public Game game;
 
 	@Override
 	public void onEnable() {
 		this.plugin = this;
+		
+		this.game = new GameControl(this);
 		
 		protocol = ProtocolLibrary.getProtocolManager();
 
@@ -125,7 +129,7 @@ public class Horror extends JavaPlugin {
 	}
 
 	public GameControl getGame() {
-		return new GameControl(this);
+		return game;
 	}
 
 	public Map getMap(String string) {
