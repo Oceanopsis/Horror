@@ -34,38 +34,54 @@ import com.comphenix.protocol.events.ListenerPriority;
 
 public class Horror extends JavaPlugin {
 
+	//The plugin
 	public Horror plugin;
 
+	//Current map string
 	private String currentMap = "";
 
+	//Files
 	private HashMap<UUID, Yaml> playerYaml = new HashMap<UUID, Yaml>();
-
 	private HashMap<String, Map> maps = new HashMap<String, Map>();
-
 	private Yaml config;
 
+	//Scoreboard stuff
 	public Scoreboard scoreboard;
 	public ScoreboardManager manager;
 	public Objective objective;
 	public Team playing;
 	public Team blue;
 	
+	//protocol manager for SoundListener.java
 	public ProtocolManager protocol;
 	
+	//The game, alows start and stop
 	public Game game;
 
 	@Override
 	public void onEnable() {
 		this.plugin = this;
 		
-		this.game = new GameControl(this);
-		
-		protocol = ProtocolLibrary.getProtocolManager();
+		//load config
+		Yaml config = getConfigIOFile();
+		config.load();
+		this.config = config;
 
-		this.getLogger().info("Loading files into memory...");
+		// enter all players, offline and online, into memory
+		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+			Yaml yaml = this.getPlayerIOFile(op.getUniqueId());
+			yaml.load();
+			this.playerYaml.put(op.getUniqueId(), yaml);
+		}
 
-		// load configs
-		loadConfigs();
+		// load maps into memory
+		File mapfile = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "maps");
+		for (String fileName : mapfile.list()) {
+			Yaml map = getMapIOFile(fileName.replace(".yml", ""));
+			map.load();
+			this.maps.put(fileName.replace(".yml", ""), new Map(map));
+			currentMap = fileName.replace(".yml", "");
+		}
 
 		//set scoreboard variables
 		manager = Bukkit.getScoreboardManager();
@@ -93,29 +109,54 @@ public class Horror extends JavaPlugin {
 			objective.unregister();
 		objective = scoreboard.registerNewObjective("Info", "dummy");
 		objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-		// register events
-		registerEvents();
-
-		// initiate PlayerRecord
-		initializePlayerRecord();
-
-		// set command executers
-		setCommandExecuters();
 		
+		//set the game
+		this.game = new GameControl(this);
+		
+		//set the protocol manager
+		protocol = ProtocolLibrary.getProtocolManager();
+		
+		//register events
+		PluginManager pm = Bukkit.getPluginManager();
+		pm.registerEvents(new PlayerJoinListener(this), this);
+		pm.registerEvents(new PlayerDeathListener(this), this);
+		pm.registerEvents(new PlayerMoveListener(this), this);
 		// sound handler
 		protocol.addPacketListener(new SoundListener(this, ListenerPriority.NORMAL, Arrays.asList(PacketType.Play.Server.NAMED_SOUND_EFFECT)));
 
-		this.getLogger().info("Files loaded");
+		//Start the PlayerRecord
+		new PlayerRecord("Oceanopsis", 0.00);
+		this.getLogger().info("PlayerRecord initiated");
+		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+			Yaml yaml = this.getPlayerYaml(op.getUniqueId());
+			this.playerYaml.put(op.getUniqueId(), yaml);
+			PlayerRecord killerrecord = PlayerRecord.getRecord(op.getName());
+			if (PlayerRecord.rankingList.contains(killerrecord)) {
+				PlayerRecord.rankingList.remove(killerrecord);
+			}
+			double kills = yaml.getDouble("kills");
+			double deaths = yaml.getDouble("deaths");
+			if (kills > 0 && deaths > 0) {
+				new PlayerRecord(op.getName(), kills / deaths);
+				PlayerRecord newkillerrecord = PlayerRecord.getRecord(op.getName());
+				newkillerrecord.toString();
+			}
+		}
 		
-		this.getLogger().info("Starting scheduler");
+		//Set the command executors
+		getCommand("game").setExecutor(new Game(this));
+		getCommand("stats").setExecutor(new Stats(this));
+		
+		//start the plugin scheduler
 		new Timer(plugin).runTaskTimer(this, 20L, 20L);
-		this.getLogger().info("Scheduler started");
 	}
 
 	@Override
 	public void onDisable() {
-		unloadConfigs();
+		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
+			Yaml yaml = this.getPlayerYaml(op.getUniqueId());
+			yaml.save();
+		}
 	}
 
 	public GameControl getGame() {
@@ -171,71 +212,6 @@ public class Horror extends JavaPlugin {
 
 	private Yaml getPlayerIOFile(UUID uuid) {
 		return new Yaml(plugin.getDataFolder().getAbsolutePath() + File.separator + "players", uuid.toString());
-	}
-
-	public void loadConfigs() {
-		
-		Yaml config = getConfigIOFile();
-		config.load();
-		this.config = config;
-
-		// enter all players, offline and online, into memory
-		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-			Yaml yaml = this.getPlayerIOFile(op.getUniqueId());
-			yaml.load();
-			this.playerYaml.put(op.getUniqueId(), yaml);
-		}
-
-		// load maps into memory
-		File mapfile = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "maps");
-		for (String fileName : mapfile.list()) {
-			Yaml map = getMapIOFile(fileName.replace(".yml", ""));
-			map.load();
-			this.maps.put(fileName.replace(".yml", ""), new Map(map));
-			currentMap = fileName.replace(".yml", "");
-		}
-	}
-
-	public void unloadConfigs() {
-
-		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-			Yaml yaml = this.getPlayerYaml(op.getUniqueId());
-			yaml.save();
-		}
-	}
-
-	private void initializePlayerRecord() {
-		this.getLogger().info("Initiating PlayerRecord and uploading playerbase to it");
-		new PlayerRecord("Oceanopsis", 0.00);
-		this.getLogger().info("PlayerRecord initiated");
-		for (OfflinePlayer op : Bukkit.getOfflinePlayers()) {
-			Yaml yaml = this.getPlayerYaml(op.getUniqueId());
-			this.playerYaml.put(op.getUniqueId(), yaml);
-			PlayerRecord killerrecord = PlayerRecord.getRecord(op.getName());
-			if (PlayerRecord.rankingList.contains(killerrecord)) {
-				PlayerRecord.rankingList.remove(killerrecord);
-			}
-			double kills = yaml.getDouble("kills");
-			double deaths = yaml.getDouble("deaths");
-			if (kills > 0 && deaths > 0) {
-				new PlayerRecord(op.getName(), kills / deaths);
-				PlayerRecord newkillerrecord = PlayerRecord.getRecord(op.getName());
-				newkillerrecord.toString();
-			}
-		}
-		this.getLogger().info("Successfully uploaded playerbase to PlayerRecord");
-	}
-
-	private void registerEvents() {
-		PluginManager pm = Bukkit.getPluginManager();
-		pm.registerEvents(new PlayerJoinListener(this), this);
-		pm.registerEvents(new PlayerDeathListener(this), this);
-		pm.registerEvents(new PlayerMoveListener(this), this);
-	}
-
-	private void setCommandExecuters() {
-		getCommand("game").setExecutor(new Game(this));
-		getCommand("stats").setExecutor(new Stats(this));
 	}
 
 }
