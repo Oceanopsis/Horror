@@ -12,20 +12,20 @@ import org.bukkit.util.Vector;
 public class Distance {
 
   	public ArrayList<Location> generateRose(Location loc, int size, double pattern, double length, double increment) {
-    	ArrayList<Location> list = new ArrayList<Location>;
-	for (double t = 0; t < length; t+=increment) {
-		//get a point on a rose based on the variables given
-		int rm = size * Math.cos(pattern*t);
-		//convert to degrees
-		int d = (180/Math.pi)*t;
-		//convert to x
-		int x = Math.sin(d)*rm;
-		//convert to z
-		int z = Math.cos(d)*rm;
-		Location rose = new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z);
-		list.add(rose);
-    	}
-    	return list;
+    		ArrayList<Location> list = new ArrayList<Location>;
+		for (double t = 0; t < length; t+=increment) {
+			//get a point on a rose based on the variables given
+			int rm = size * Math.cos(pattern*t);
+			//convert to degrees
+			int d = (180/Math.pi)*t;
+			//convert to x
+			int x = Math.sin(d)*rm;
+			//convert to z
+			int z = Math.cos(d)*rm;
+			Location rose = new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z);
+			list.add(rose);
+    		}
+    		return list;
   	}
 
 	public static Location getHighestPoint(Location loc) {
