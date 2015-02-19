@@ -13,15 +13,21 @@ public class Distance {
 
 	public static ArrayList<Location> generateRose(Location loc, int size, double pattern, double density) {
 		ArrayList<Location> list = new ArrayList<Location>();
-		for (double t = 0; t < density; t++) {
-			// get a point on a rose based on the variables given
+		
+		//loop over 360 degrees
+		for (double d = 0; d < 360; d+=density) {
+			
+			//covert degrees to radians
+			double t = (Math.PI / 180) * t;
+			
+			//get out pattern
 			double rm = size * Math.cos(pattern * t);
-			// convert to degrees
-			double d = (180 / Math.PI) * t;
-			// convert to x
+			
+			//convert the polar ccordinates back to rectangular
 			double x = Math.sin(d) * rm;
-			// convert to z
 			double z = Math.cos(d) * rm;
+			
+			//get the location and add it to the list
 			Location rose = new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z);
 			list.add(rose);
 		}
