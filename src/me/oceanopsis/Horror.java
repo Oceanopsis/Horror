@@ -56,7 +56,7 @@ public class Horror extends JavaPlugin {
 	public ProtocolManager protocol;
 	
 	//The game, alows start and stop
-	public Game game;
+	public GameControl game;
 
 	@Override
 	public void onEnable() {

@@ -11,22 +11,22 @@ import org.bukkit.util.Vector;
 
 public class Distance {
 
-  	public ArrayList<Location> generateRose(Location loc, int size, double pattern, double length, double increment) {
-    		ArrayList<Location> list = new ArrayList<Location>;
-		for (double t = 0; t < length; t+=increment) {
-			//get a point on a rose based on the variables given
-			int rm = size * Math.cos(pattern*t);
-			//convert to degrees
-			int d = (180/Math.pi)*t;
-			//convert to x
-			int x = Math.sin(d)*rm;
-			//convert to z
-			int z = Math.cos(d)*rm;
+	public static ArrayList<Location> generateRose(Location loc, int size, double pattern, double density) {
+		ArrayList<Location> list = new ArrayList<Location>();
+		for (double t = 0; t < density; t++) {
+			// get a point on a rose based on the variables given
+			double rm = size * Math.cos(pattern * t);
+			// convert to degrees
+			double d = (180 / Math.PI) * t;
+			// convert to x
+			double x = Math.sin(d) * rm;
+			// convert to z
+			double z = Math.cos(d) * rm;
 			Location rose = new Location(loc.getWorld(), loc.getX() + x, loc.getY(), loc.getZ() + z);
 			list.add(rose);
-    		}
-    		return list;
-  	}
+		}
+		return list;
+	}
 
 	public static Location getHighestPoint(Location loc) {
 		int y = 256;
@@ -163,12 +163,13 @@ public class Distance {
 		}
 		return loclist;
 	}
+
 	public static ArrayList<Location> getLocationsBetweenLocations(Location loc, Location loc2) {
 
 		ArrayList<Location> loclist = new ArrayList<Location>();
-		
+
 		int distance = (int) Math.floor(loc.distance(loc2));
-		
+
 		loc = Distance.lookAt(loc, loc2);
 
 		double px = loc.getX();
@@ -315,7 +316,7 @@ public class Distance {
 	}
 
 	public static ArrayList<Entity> getEntitiesInRadius(Entity entity, double radius) {
-		
+
 		Location loc = entity.getLocation();
 
 		ArrayList<Entity> entities = new ArrayList<Entity>();
